@@ -4,12 +4,13 @@ package server
 
 import (
 	"fmt"
-	"google.golang.org/grpc/encoding"
-	"google.golang.org/grpc/encoding/proto"
 	"net/http"
 	"os"
 	"runtime/pprof"
 	"time"
+
+	"google.golang.org/grpc/encoding"
+	"google.golang.org/grpc/encoding/proto"
 
 	"github.com/spf13/cobra"
 	"github.com/tendermint/tendermint/abci/server"

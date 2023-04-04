@@ -3,6 +3,7 @@ package types
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	"github.com/cosmos/cosmos-sdk/x/auth/legacy/legacytx"
 )
 
 // distribution message types
@@ -11,6 +12,7 @@ const (
 	TypeMsgWithdrawDelegatorReward     = "withdraw_delegator_reward"
 	TypeMsgWithdrawValidatorCommission = "withdraw_validator_commission"
 	TypeMsgFundCommunityPool           = "fund_community_pool"
+	TypeMsgSetAutoRestake              = "set_auto_restake"
 )
 
 // Verify interface at compile time
@@ -164,3 +166,46 @@ func (msg MsgFundCommunityPool) ValidateBasic() error {
 
 	return nil
 }
+
+// NewMsgFundCommunityPool returns a new MsgFundCommunityPool with a sender and
+// a funding amount.
+func NewMsgSetAutoRestake(delegator sdk.AccAddress, validator sdk.ValAddress, toggle bool) *MsgSetAutoRestake {
+	return &MsgSetAutoRestake{
+		delegator.String(),
+		validator.String(),
+		toggle,
+	}
+}
+
+func (msg MsgSetAutoRestake) ValidateBasic() error {
+	if msg.ValidatorAddress == "" {
+		return ErrEmptyValidatorAddr
+	}
+	if msg.DelegatorAddress == "" {
+		return ErrEmptyDelegatorAddr
+	}
+	return nil
+}
+
+func (msg MsgSetAutoRestake) GetSigners() []sdk.AccAddress {
+	delegatorAddr, err := sdk.AccAddressFromBech32(msg.DelegatorAddress)
+	if err != nil {
+		panic(err)
+	}
+	return []sdk.AccAddress{delegatorAddr}
+}
+
+// Route returns the MsgFundCommunityPool message route.
+func (msg MsgSetAutoRestake) Route() string { return ModuleName }
+
+// Type returns the MsgFundCommunityPool message type.
+func (msg MsgSetAutoRestake) Type() string { return TypeMsgSetAutoRestake }
+
+// GetSignBytes returns the raw bytes for a MsgSetAutoRestake message that
+// the expected signer needs to sign.
+func (msg MsgSetAutoRestake) GetSignBytes() []byte {
+	bz := ModuleCdc.MustMarshalJSON(&msg)
+	return sdk.MustSortJSON(bz)
+}
+
+var _ legacytx.LegacyMsg = (*MsgSetAutoRestake)(nil)
